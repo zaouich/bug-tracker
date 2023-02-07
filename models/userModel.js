@@ -2,46 +2,60 @@ const validator = require("validator");
 const bcrypt = require("bcrypt");
 const { mongoose, model } = require("mongoose");
 const crypto = require("crypto");
-const userSchema = mongoose.Schema({
-	userName: {
-		type: String,
-		required: [true, "why no user name ?"],
-		unique: true,
-	},
-	email: {
-		type: String,
-		validate: [validator.isEmail, "please provide a valid email !"],
-		required: [true, "why no  name ?"],
-		unique: true,
-	},
-	password: {
-		type: String,
-		required: [true, "why no  name ?"],
-		minlength: [8, "password should at less 8 char"],
-	},
-	confirmPassword: {
-		type: String,
-		required: [true, "you should repate your password"],
-		validate: {
-			validator: function (val) {
-				return val === this.password;
-			},
-			message: "passwords not match",
+const userSchema = mongoose.Schema(
+	{
+		userName: {
+			type: String,
+			required: [true, "why no user name ?"],
+			unique: true,
 		},
+		email: {
+			type: String,
+			validate: [validator.isEmail, "please provide a valid email !"],
+			required: [true, "why no  name ?"],
+			unique: true,
+		},
+		password: {
+			type: String,
+			required: [true, "why no  name ?"],
+			minlength: [8, "password should at less 8 char"],
+		},
+		confirmPassword: {
+			type: String,
+			required: [true, "you should repate your password"],
+			validate: {
+				validator: function (val) {
+					return val === this.password;
+				},
+				message: "passwords not match",
+			},
+		},
+		changedAt: Date,
+		active: {
+			type: Boolean,
+			default: true,
+		},
+		verified: {
+			type: Boolean,
+			default: false,
+		},
+		verificationToken: String,
+		resetToken: String,
+		expriesResetToken: Date,
 	},
-	changedAt: Date,
-	active: {
-		type: Boolean,
-		default: true,
-	},
-	verified: {
-		type: Boolean,
-		default: false,
-	},
-	verificationToken: String,
-	resetToken: String,
-	expriesResetToken: Date,
+	{ toJSON: { virtuals: true }, toObject: { virtuals: true } }
+);
+userSchema.virtual("projects", {
+	ref: "Project",
+	foreignField: "admin",
+	localField: "_id",
 });
+
+userSchema.pre(/^find/, function (next) {
+	this.populate("projects").find({ active: true });
+	next();
+});
+
 userSchema.pre("save", function (next) {
 	if (this.isNew) {
 		this.password = bcrypt.hashSync(this.password, 12);
@@ -49,6 +63,7 @@ userSchema.pre("save", function (next) {
 	}
 	next();
 });
+
 userSchema.methods.changePassword = function (iat) {
 	if (!this.changedAt) return false;
 	return parseInt(iat * 1000 < this.changedAt);
