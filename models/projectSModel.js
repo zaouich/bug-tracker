@@ -1,4 +1,5 @@
 const { Schema, mongoose, model } = require("mongoose");
+const MemberShip = require("./memberShipModel");
 
 const projectSchema = new Schema(
 	{
@@ -19,11 +20,29 @@ const projectSchema = new Schema(
 			type: String,
 			required: [true, "a broject must have a description"],
 		},
+		password: {
+			type: String,
+			required: [true, "a project must have a password"],
+		},
 	},
 	{ toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
-/* projectSchema.pre(/^find/, function (next) {
+projectSchema.virtual("members", {
+	ref: "MemberShip",
+	foreignField: "project",
+	localField: "_id",
+});
+projectSchema.pre(/^find/, async function (next) {
+	this.populate("members");
 	next();
-}); */
+});
+projectSchema.pre("save", async function (next) {
+	await MemberShip.create({
+		user: this.admin,
+		project: this._id,
+		role: "admin",
+	});
+	next();
+});
 const Project = model("Project", projectSchema);
 module.exports = Project;

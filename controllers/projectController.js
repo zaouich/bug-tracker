@@ -1,4 +1,5 @@
 const { json } = require("body-parser");
+const MemberShip = require("../models/memberShipModel");
 const Project = require("../models/projectSModel");
 const User = require("../models/userModel");
 const AppError = require("../utils/AppError");
@@ -7,20 +8,29 @@ const catchAsync = require("../utils/catchAsync");
 // add new project
 const postNewProject = catchAsync(async (req, res, next) => {
 	const user = req.user._id;
-	const { name, description } = req.body;
+	const { name, description, password } = req.body;
 	console.log("test");
-	const project = await Project.create({ name, description, admin: user });
+	const project = await Project.create({
+		name,
+		description,
+		admin: user,
+		password,
+	});
 	res.status(201).json({
 		status: "success",
 		project,
 	});
 });
 const getAllProjects = async (req, res, next) => {
-	const user = req.user._id;
-	const projects = await Project.find({ admin: user });
+	const members = await MemberShip.find({ user: req.user._id });
+	const projects = members.map(async (el) => {
+		return await Project.findById(el.project);
+	});
+	const projects_ = await Promise.all(projects);
+	console.log(projects_);
 	res.status(200).json({
 		status: "success",
-		projects,
+		projects_,
 	});
 };
 
