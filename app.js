@@ -3,6 +3,7 @@ const cookieParser = require("cookie-parser");
 const dotenv = require("dotenv");
 const usersRouter = require("./routers/usersRouter");
 const projectsRouter = require("./routers/projectsRouter");
+const bugsRouter = require("./routers/bugsRouter");
 const errController = require("./controllers/errController");
 const { use } = require("./routers/usersRouter");
 const cors = require("cors");
@@ -22,4 +23,5 @@ module.exports = app;
 // routers
 app.use("/api/v1/users", usersRouter);
 app.use("/api/v1/projects", projectsRouter);
+app.use("/api/v1/bugs", bugsRouter);
 app.use(errController);

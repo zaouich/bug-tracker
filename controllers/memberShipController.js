@@ -1,8 +1,9 @@
 const MemberShip = require("../models/memberShipModel");
 const Project = require("../models/projectSModel");
+const User = require("../models/userModel");
 const AppError = require("../utils/AppError");
 const catchAsync = require("../utils/catchAsync");
-
+// join a project
 const postMemberShip = catchAsync(async (req, res, next) => {
 	const user = req.user._id;
 	const project = req.params.projectId;
@@ -19,6 +20,7 @@ const postMemberShip = catchAsync(async (req, res, next) => {
 		memberShip,
 	});
 });
+// get all memberships if you are admin
 const getAllMemberShips = catchAsync(async (req, res, next) => {
 	const projectId = req.params.projectId;
 	const userId = req.user._id;
@@ -32,6 +34,7 @@ const getAllMemberShips = catchAsync(async (req, res, next) => {
 		memberShips: project.members,
 	});
 });
+// quick out
 const deleteMemberShip = catchAsync(async (req, res, next) => {
 	const memberShipId = req.params.memberShipId;
 	const projectId = req.params.projectId;
@@ -51,4 +54,24 @@ const deleteMemberShip = catchAsync(async (req, res, next) => {
 		memberShips: project.members,
 	});
 });
-module.exports = { postMemberShip, getAllMemberShips, deleteMemberShip };
+// quite the project
+const quite = catchAsync(async (req, res, next) => {
+	const userId = req.user._id;
+	const projectId = req.params.projectId;
+	const user = await User.findById(userId);
+	const { password } = req.body;
+	if (!password || !(await user.isCorrectPassword(password)))
+		return next(new AppError(401, "please provide a valid password"));
+	// check if the user is in the project
+	const memberShip = await MemberShip.findOneAndDelete({
+		user: userId,
+		project: projectId,
+	});
+	if (!memberShip)
+		return next(new AppError(401, "you are not in this project"));
+	res.status(201).json({
+		status: "success",
+		message: "you are quite this project",
+	});
+});
+module.exports = { postMemberShip, getAllMemberShips, deleteMemberShip, quite };

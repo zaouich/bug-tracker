@@ -12,6 +12,10 @@ const memberShipSchema = new Schema({
 		ref: "Project",
 		required: [true, "a project must belong to a project"],
 	},
+	role: {
+		type: String,
+		required: [true, "you should choose a role in this project"],
+	},
 	createdAt: {
 		type: Date,
 		default: Date.now(),

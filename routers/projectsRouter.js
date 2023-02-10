@@ -6,11 +6,14 @@ const {
 	getOneProject,
 	deleteProject,
 	updateProject,
-	joinProject,
 } = require("../controllers/projectController");
 const memberShipsRouter = require("./memberShipsRouter");
+const bugsRouter = require("./bugsRouter");
 const router = Router();
+
 router.use("/:projectId/memberShips", memberShipsRouter);
+
+router.use("/:projectId/bugs", bugsRouter);
 router.use(checkLogin, isVerified);
 router.route("/").post(postNewProject).get(getAllProjects);
 router

@@ -21,6 +21,7 @@ const postNewProject = catchAsync(async (req, res, next) => {
 		project,
 	});
 });
+// get your projects
 const getAllProjects = async (req, res, next) => {
 	const members = await MemberShip.find({ user: req.user._id });
 	const projects = members.map(async (el) => {
@@ -33,7 +34,7 @@ const getAllProjects = async (req, res, next) => {
 		projects_,
 	});
 };
-
+// get one project
 const getOneProject = catchAsync(async (req, res, next) => {
 	const user = req.user._id;
 	const project = await Project.findOne({ _id: req.params.id, admin: user });
@@ -44,11 +45,14 @@ const getOneProject = catchAsync(async (req, res, next) => {
 		project,
 	});
 });
+// delete project
 const deleteProject = catchAsync(async (req, res, next) => {
 	const user = req.user._id;
 	const project = await Project.findOne({ _id: req.params.id, admin: user });
 	if (!project)
-		return next(new AppError(400, "there is no poject for u by  this id"));
+		return next(
+			new AppError(400, "there is no poject for u as an admin by  this id")
+		);
 	const user_ = await User.findById(req.user._id);
 	const { password } = req.body;
 	if (!password || !(await user_.isCorrectPassword(password)))
@@ -60,6 +64,7 @@ const deleteProject = catchAsync(async (req, res, next) => {
 		message: "deleted",
 	});
 });
+//update project infos
 const updateProject = catchAsync(async (req, res, next) => {
 	const body_ = { ...req.body };
 	const allowed = ["name", "description"];
