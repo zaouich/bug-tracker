@@ -3,6 +3,17 @@ const Project = require("../models/projectSModel");
 const User = require("../models/userModel");
 const AppError = require("../utils/AppError");
 const catchAsync = require("../utils/catchAsync");
+
+const checkAdmin = async (userId, projectId) => {
+	const project = await Project.findById(projectId);
+	if (!project) throw new AppError("there is no project found by this id");
+	const admin = project.admin;
+	if (project.admin.toString() === userId.toString())
+		throw new AppError(
+			400,
+			"you cant leave an project if you own it , go ahead and delete all the roject"
+		);
+};
 // join a project
 const postMemberShip = catchAsync(async (req, res, next) => {
 	const user = req.user._id;
@@ -59,10 +70,12 @@ const quite = catchAsync(async (req, res, next) => {
 	const userId = req.user._id;
 	const projectId = req.params.projectId;
 	const user = await User.findById(userId);
+	await checkAdmin(userId, projectId);
 	const { password } = req.body;
 	if (!password || !(await user.isCorrectPassword(password)))
 		return next(new AppError(401, "please provide a valid password"));
 	// check if the user is in the project
+
 	const memberShip = await MemberShip.findOneAndDelete({
 		user: userId,
 		project: projectId,
