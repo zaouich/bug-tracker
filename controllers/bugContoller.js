@@ -57,8 +57,24 @@ const deleteBug = catchAsync(async (req, res, next) => {
 	const user = req.user._id;
 	const bugId = req.params.bugId;
 	const bug = await Bug.findOneAndDelete({ user, _id: bugId });
-	if (!bug)
-		return next(new AppError(401, "there is no bug for you by this id"));
+	if (!bug) {
+		const bug_ = await Bug.findById(bugId);
+		if (!bug_)
+			return next(new AppError(400, "there is no bug found by this id"));
+		const project_ = await Project.findById(bug_.project);
+		console.log(project_.admin, "***", user);
+		console.log(project_.admin.toString() == user.toString());
+		if (project_.admin.toString() === user.toString()) {
+			await Bug.findByIdAndDelete(bug_._id);
+			return res.status(200).json({
+				status: "success",
+				message: "deleted",
+			});
+		} else {
+			return next(new AppError(401, "there is no bug for you by this id"));
+		}
+	}
+
 	res.status(200).json({
 		status: "success",
 		message: "deleted",
@@ -73,18 +89,6 @@ const getAllBugs = async (req, res, next) => {
 		user,
 	});
 	if (!bugs) return next(new AppError("you have no bug in this project"));
-};
-// delete a bug as an admin
-const deleteBugAsAdmin = async (req, res, next) => {
-	const bug = req.params.bugId;
-	const project = req.params.projectId;
-	const user = req.user._id;
-	const targetBug = await Bug.findById(bug);
-	if (!targetBug)
-		return next(new AppError(400, "there is no bug found by this id"));
-	const targetProject = Project.findOne({ _id: project, admin: user });
-	if (!targetProject)
-		return next(new AppError(400, "you are not the admin of the project"));
 };
 
 module.exports = { postNewBug, updateBug, deleteBug };

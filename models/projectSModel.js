@@ -37,8 +37,8 @@ projectSchema.virtual("bugs", {
 	foreignField: "project",
 	localField: "_id",
 });
-projectSchema.virtual("nBugs", function () {
-	return this.bugs.length();
+projectSchema.virtual("nBugs").get(function () {
+	return "this.bugs.length";
 });
 projectSchema.pre(/^find/, async function (next) {
 	this.populate("members").populate("bugs");

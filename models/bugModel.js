@@ -1,7 +1,7 @@
 const { Schema, model, mongoose } = require("mongoose");
 
 const bugSchema = new Schema({
-	slover: {
+	sloved: {
 		type: Boolean,
 		default: false,
 	},

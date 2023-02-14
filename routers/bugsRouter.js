@@ -1,3 +1,6 @@
+const trysRouter = require("./tryesRouter");
+const solutionsRouter = require("./solutionRouter");
+
 const { Router } = require("express");
 const {
 	postNewBug,
@@ -7,6 +10,8 @@ const {
 const { checkLogin, isVerified } = require("../controllers/authController");
 
 const router = Router({ mergeParams: true });
+router.use("/:bugId/trys", trysRouter);
+router.use("/:bugId/solutions", solutionsRouter);
 router.use(checkLogin, isVerified);
 
 router.route("/").post(postNewBug);
