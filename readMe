@@ -1,3 +1,1 @@
-// add delete a bug as an admin
-// add a vertuals bugs in project , and the nBug
-// add the populate as well
+An API that allows users to create a group and invite others to join, so they can track the project's bugs (attempts, solutions, comments).
